@@ -13,13 +13,23 @@ class LanguageLesson(BaseModel):
     english_translation: str
 
 SCENARIOS = [
-    "Ordering at a local cafe or street market",
-    "Asking a friendly local for directions to a landmark",
-    "Discussing daily morning routines and hobbies",
-    "Buying tickets at a train or bus station",
-    "A casual conversation about the weekend weather",
-    "Checking in at a hotel and asking about breakfast",
-    "Meeting a neighbor and introducing yourself"
+    # Mystery & Discovery
+    "A person finds an old, dusty key inside a vintage book bought at a flea market.",
+    "A strange, glowing door appears at the back of a routine grocery store aisle.",
+    "A detective questions an unusually calm cat who seems to have witnessed a missing jewelry case.",
+    "A traveler discovers an uncharted coffee shop that only appears during rainy afternoons.",
+
+    # Comedy & Mishaps
+    "A chef accidentally invents a dish that makes everyone who eats it uncontrollably honest.",
+    "A time traveler tries to order modern fast food without revealing they are from the year 1850.",
+    "Two neighbors both try to secretly return a runaway pet parrot who only repeats gossip.",
+    "A student attempts to bake a birthday cake using an ancient recipe and ends up with a chaotic kitchen.",
+
+    # Adventure & Cozy Life
+    "A quiet night at a train cabin heading through snowy mountains while sharing tea with a stranger.",
+    "A street musician plays a melody that makes all nearby stray dogs gather and sit in a polite circle.",
+    "A photographer spots a rare, legendary bird sitting calmly on their balcony railing.",
+    "A botanist discovers a peculiar flower in their greenhouse that gently hums when watered.",
 ]
 
 def get_daily_lesson(language: str = "Hindi", level: str = "Beginner") -> dict:
@@ -28,14 +38,15 @@ def get_daily_lesson(language: str = "Hindi", level: str = "Beginner") -> dict:
     scenario = random.choice(SCENARIOS)
 
     prompt = f"""
-    You are an expert language teacher. Create a short daily reading lesson for a {level} student learning {language}.
+    You are an engaging storyteller and language teacher. 
+    Write an entertaining, creative short story (less than 500 words) for a {level} learner studying {language}.
 
-    Topic / Scenario: {scenario}
+    Story Premise: {scenario}
 
     Requirements:
-    1. 'target_language_text': A short natural conversation or paragraph in {language} (3 to 6 sentences). Use authentic native script (e.g., Devanagari for Hindi, Kanji/Kana for Japanese, Cyrillic for Russian, etc.).
-    2. 'pronunciation_guide': Provide a clear phonetic/romanized transliteration for languages with non-Latin scripts (e.g., Pinyin, Romaji, Roman Hindi). If the language uses the Latin alphabet (e.g., Spanish, French, German), provide syllable stress or key pronunciation notes for tricky words.
-    3. 'english_translation': A natural English translation of the entire passage.
+    1. 'target_language_text': A fun, narrative short story in {language}. Keep the vocabulary and grammar natural and appropriate for a {level} level. Use authentic native script (e.g., Devanagari for Hindi, Kanji/Kana for Japanese, Cyrillic for Russian, etc.).
+    2. 'pronunciation_guide': Provide a clear phonetic/romanized transliteration for non-Latin scripts (e.g., Roman Hindi, Romaji, Pinyin). For Latin scripts (Spanish, French, etc.), provide pronunciation/intonation tips for key phrases.
+    3. 'english_translation': A smooth, natural English translation of the story.
     """
 
     response = client.models.generate_content(
