@@ -1,59 +1,55 @@
 import os
-import json
 import random
-from pydantic import BaseModel
 from google import genai
-from google.genai import types
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
 
-class HindiLesson(BaseModel):
-    hindi_text: str
-    roman_hindi: str
+# Define the structured output format
+class LanguageLesson(BaseModel):
+    target_language_text: str
+    pronunciation_guide: str  # Romanized/phonetic breakdown (or pronunciation tips for Latin scripts)
     english_translation: str
 
-def get_daily_lesson():
-    """Fetches a daily 5-minute Hindi reading exercise."""
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+SCENARIOS = [
+    "Ordering at a local cafe or street market",
+    "Asking a friendly local for directions to a landmark",
+    "Discussing daily morning routines and hobbies",
+    "Buying tickets at a train or bus station",
+    "A casual conversation about the weekend weather",
+    "Checking in at a hotel and asking about breakfast",
+    "Meeting a neighbor and introducing yourself"
+]
 
-    
-    # 1. Create a list of varied topics and formats
-    scenarios = [
-        "A fascinating short story from Indian folklore or mythology.",
-        "A realistic, slightly dramatic dialogue between two friends arguing about travel plans.",
-        "A detailed first-person journal entry about a chaotic but fun wedding.",
-        "An interesting cultural explanation of how a specific Indian street food is made.",
-        "A comedic story about a misunderstanding at a workplace.",
-        "A thoughtful opinion piece on the balance between modern life and tradition."
-    ]
-    
-    # 2. Pick a random scenario each day
-    daily_topic = random.choice(scenarios)
-    
-    # 3. Inject it into a highly specific prompt
+def get_daily_lesson(language: str = "Hindi", level: str = "Beginner") -> dict:
+    """Generates a dynamic reading lesson tailored to the user's language and level."""
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    scenario = random.choice(SCENARIOS)
+
     prompt = f"""
-    Write a comprehensive and engaging Hindi text based on this topic: {daily_topic}
-    
-    Strict Requirements:
-    * Length: The text must be roughly 250 to 350 words long. 
-    * Structure: Use multiple paragraphs. Mix short, punchy sentences with longer, complex ones.
-    * Target Audience: An intermediate Hindi learner. Use natural, conversational grammar but avoid overly obscure vocabulary.
+    You are an expert language teacher. Create a short daily reading lesson for a {level} student learning {language}.
+
+    Topic / Scenario: {scenario}
+
+    Requirements:
+    1. 'target_language_text': A short natural conversation or paragraph in {language} (3 to 6 sentences). Use authentic native script (e.g., Devanagari for Hindi, Kanji/Kana for Japanese, Cyrillic for Russian, etc.).
+    2. 'pronunciation_guide': Provide a clear phonetic/romanized transliteration for languages with non-Latin scripts (e.g., Pinyin, Romaji, Roman Hindi). If the language uses the Latin alphabet (e.g., Spanish, French, German), provide syllable stress or key pronunciation notes for tricky words.
+    3. 'english_translation': A natural English translation of the entire passage.
     """
-    
+
     response = client.models.generate_content(
-        model="gemini-3.6-flash",
+        model="gemini-2.5-flash",
         contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=HindiLesson,
-            temperature=0.8, # Slightly higher temperature for better creative storytelling
-        ),
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": LanguageLesson,
+        },
     )
-    
-    return json.loads(response.text)
+
+    lesson_data = LanguageLesson.model_validate_json(response.text)
+    return lesson_data.model_dump()
 
 if __name__ == "__main__":
-    lesson = get_daily_lesson()
-    print(f"Hindi Text ({len(lesson['hindi_text'].split())} words):\n{lesson['hindi_text']}\n")
-    print("Roman Hindi preview:", lesson["roman_hindi"][:100], "...")
+    test_lesson = get_daily_lesson("Hindi", "Beginner")
+    print(test_lesson)
