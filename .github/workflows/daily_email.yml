@@ -1,0 +1,30 @@
+name: Daily Language Lesson
+
+on:
+  schedule:
+    # This runs at 07:00 UTC every day. Change the 7 to your preferred hour.
+    - cron: '0 7 * * *'
+  workflow_dispatch: # This magical line adds a "Run Now" button to GitHub for testing
+
+jobs:
+  send_emails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily task
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          USERS_JSON: ${{ secrets.USERS_JSON }}
+        run: python daily_task.py

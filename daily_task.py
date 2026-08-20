@@ -4,12 +4,15 @@ import os
 from ai_generator import get_daily_lesson
 from email_sender import send_initial_email, send_translation_email
 
-# Find users.json in the same directory as this script
-base_dir = os.path.dirname(os.path.abspath(__file__))
-users_file_path = os.path.join(base_dir, "users.json")
+# Read the JSON string directly from the GitHub Secret
+users_json_string = os.getenv("USERS_JSON")
 
-with open(users_file_path, "r", encoding="utf-8") as f:
-    users = json.load(f)
+if not users_json_string:
+    print("Error: USERS_JSON secret is missing or empty!")
+    exit(1)
+
+# Convert the string back into a Python list
+users = json.loads(users_json_string)
 
 # Step 1: Generate lessons and send Email #1 to all users
 pending_translations = []
