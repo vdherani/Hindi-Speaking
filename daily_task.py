@@ -1,7 +1,7 @@
 import json
 import time
 import os
-from ai_generator import get_daily_lesson
+from ai_text_generator import get_daily_lesson
 from email_sender import send_initial_email, send_translation_email
 
 # Read the JSON string directly from the GitHub Secret
